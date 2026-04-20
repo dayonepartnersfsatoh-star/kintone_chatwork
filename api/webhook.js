@@ -9,15 +9,15 @@ export default async function handler(req, res) {
 
     const message =
       `[info][title]kintone通知[/title]` +
-      `氏名：${name}\n` +
-      `電話番号：${phone}\n` +
-      `住所：${address}\n` +
-      `レコードURL：${body.url || ""}` +
+      `氏名：${safeText(name)}\n` +
+      `電話番号：${safeText(phone)}\n` +
+      `住所：${safeText(address)}\n` +
+      `レコードURL：${safeText(body.url || "")}` +
       `[/info]`;
 
-    const roomId = await getRoomId();
+    const roomId = "434237792";
 
-    await fetch(`https://api.chatwork.com/v2/rooms/${roomId}/messages`, {
+    const chatworkRes = await fetch(`https://api.chatwork.com/v2/rooms/${roomId}/messages`, {
       method: "POST",
       headers: {
         "X-ChatWorkToken": process.env.CHATWORK_TOKEN,
@@ -28,24 +28,26 @@ export default async function handler(req, res) {
       })
     });
 
-    return res.status(200).json({ ok: true });
+    const resultText = await chatworkRes.text();
+
+    if (!chatworkRes.ok) {
+      throw new Error(`Chatwork送信失敗: ${chatworkRes.status} ${resultText}`);
+    }
+
+    return res.status(200).json({
+      ok: true,
+      roomId,
+      result: resultText
+    });
 
   } catch (e) {
-    return res.status(500).json({ ok: false, error: e.message });
+    return res.status(500).json({
+      ok: false,
+      error: e.message
+    });
   }
 }
 
-async function getRoomId() {
-  const res = await fetch("https://api.chatwork.com/v2/rooms", {
-    headers: {
-      "X-ChatWorkToken": process.env.CHATWORK_TOKEN
-    }
-  });
-
-  const rooms = await res.json();
-  const room = rooms.find(r => r.name === "マイチャット");
-
-  if (!room) throw new Error("マイチャットが見つからない");
-
-  return room.room_id;
+function safeText(value) {
+  return String(value || "").replace(/\[info\]|\[\/info\]|\[title\]|\[\/title\]/g, "");
 }
