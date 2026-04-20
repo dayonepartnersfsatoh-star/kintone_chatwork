@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       const address = record["文字列__1行__5"]?.value || "";
 
       message =
-        `[info][title]アプリ1通知[/title]` +
+        `[info][title]東京都限定アンケート[/title]` +
         `氏名：${safeText(name)}\n` +
         `電話番号：${safeText(phone)}\n` +
         `住所：${safeText(address)}\n` +
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       const address = record["住所"]?.value || "";
 
       message =
-        `[info][title]アプリ2通知[/title]` +
+        `[info][title]太陽光アンケート[/title]` +
         `氏名：${safeText(name)}\n` +
         `電話番号：${safeText(phone)}\n` +
         `住所：${safeText(address)}\n` +
@@ -37,7 +37,6 @@ export default async function handler(req, res) {
         `[/info]`;
     }
 
-    // ===== 対象外アプリ =====
     else {
       return res.status(200).json({
         ok: true,
